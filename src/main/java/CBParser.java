@@ -19,6 +19,10 @@ public class CBParser {
         return date;
     }
 
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     public String getCurrencyValue() throws IOException {
         String result = "";
         Document xmlData = Jsoup.connect(url + getDate()).get();
@@ -34,6 +38,6 @@ public class CBParser {
             }
         }
 
-        return "Курс по ЦБ за " + getDate() + ":\n" + result;
+        return "Курс по ЦБ за " + getDate() + ":\n" + result + "\nДля получения курса валют за определенную дату, введите ее в следующем формате: dd/mm/yyyy";
     }
 }

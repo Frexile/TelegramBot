@@ -7,6 +7,9 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 public class Bot extends TelegramLongPollingBot {
 
     private static final String botToken = "1074111622:AAGvryL9DZpIpOoi58eKMiBoSdVuUORGdg0";
@@ -40,31 +43,19 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
-
+        MessageParser messageParser = new MessageParser();
         if (message != null && message.hasText()) {
-            switch (message.getText()) {
-                case "/start" :
-                    //TODO мб стоит добавить возможность вывода курса после старта
-                    sendMsg(message, "Привет, чем я могу помочь?\nP.S.Для получения справки касательно функционала введите /help");
-                    break;
-                case "/help" :
-                    sendMsg(message, "Основные команды для работы со мной:\n1./start: Приветствие(начало работы)\n2./info: Возможности бота\n3./help: Краткая справка относительно команд\n4./valutes: Список валют");
-                    break;
-                case "/info" :
-                    sendMsg(message, "Я могу:\n1.Вывести курсы валют согласно ЦБ\n2.Показать список банков в определенном регионе с самыми выгодными условиями для обмена определенной валюты");
-                    break;
-                case "/valutes" :
-                    sendMsg(message, "Список фигурирующих валют:\n1.Американский доллар(USD)\n2.Евро(EUR)\n3.Фунт стерлингов Соединенного королевства(GBR)\n4.Китайский юань(CNY)\n5.Японская иена(JPY)");
-                    break;
-                case "/centralBank" :
-                    sendMsg(message, "");
+            try {
+                sendMsg(message,messageParser.parseMessage(message));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
 
     @Override
     public String getBotUsername() {
-        return "LebowskiBot";
+        return "Lebowski Bot";
     }
 
     @Override

@@ -1,35 +1,36 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.telegram.telegrambots.api.objects.Message;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class TopBanksOfCitiesParser {
     private static final String url = "https://ru.myfin.by/currency/";
-    private final String[] validCurrencyArr = new String[]{"USD", "EUR", "GBP", "CNY", "JPY"};
-    private String city;
-    private String currency;
+    private final String[] validCurrencyArr = new String[]{"usd", "eur", "gbp", "cny", "jpy"};
 
-    public TopBanksOfCitiesParser(String city, String currency) {
-        this.city = city;
-        this.currency = currency;
+    private Message message;
+
+    public TopBanksOfCitiesParser(Message message) {
+        this.message = message;
     }
 
-    public String getCity() {
-        return city;
-    }
+    public String getBanksAndCurrency(Document document) throws IOException {
 
-    public String getCurrency() {
-        return currency;
-    }
-
-    public String getBanksAndCurrency() throws IOException {
         byte counter = 0;
         String result = "";
-        Document xmlData = Jsoup.connect(url + getCurrency() + "/" + getCity()).get();
 
-        Elements elements = xmlData.select("#g_bank_rates > table > tbody > tr");
+        String header = document.select("body > div.container.page_cont > div.row > div.col-md-9.main-container.pos-r.ovf-hidden > div:nth-child(1) > div.content_i-head.content_i-head--datepicker-fix > div.wrapper-flex > div.wrapper-flex__title > h1").text();
+
+        Elements elements = document.select("#g_bank_rates > table > tbody > tr");
         for (Element el : elements) {
             if (counter == 5)
                 break;
@@ -44,11 +45,33 @@ public class TopBanksOfCitiesParser {
                 result += bankName + "\n" + "Покупка: " + buyingCurrency + "\n" + "Продажа: " + sellingCurrency + "\n\n";
             }
         }
-        return "Курс " + getCurrency() + " в городе " + getCity() + "\n\n" + result;
+        if (result.equals(""))
+            return "В данном городе нет банков продающих/покупающих данную валюту";
+        return header + "\n\n" + result + "\n\n";
     }
 
-    public static void main(String[] args) throws IOException {
-        TopBanksOfCitiesParser parser = new TopBanksOfCitiesParser("moskva","eur");
-        System.out.println(parser.getBanksAndCurrency());
+    public String getInfo() throws IOException {
+        MessageParser parser = new MessageParser();
+        Document xmlData = null;
+
+        String currencyCode = parser.getCurrencyCodeFromMessage(message);
+        String city = parser.getCityFromMessage(message);
+
+        if (city.equals("getCityError"))
+            return "Нет названия города";
+
+        if (!currencyCode.equals("no valute")){
+            xmlData = Jsoup.connect(url + currencyCode + "/" + city).get();
+            return getBanksAndCurrency(xmlData);
+        }
+        else {
+            String result = "";
+            for (int i = 0; i < validCurrencyArr.length; i++) {
+               currencyCode = validCurrencyArr[i];
+               xmlData = Jsoup.connect(url + currencyCode + "/" + city).get();
+               result += getBanksAndCurrency(xmlData);
+            }
+            return result;
+        }
     }
 }
