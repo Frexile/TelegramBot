@@ -11,12 +11,14 @@ import org.telegram.telegrambots.api.objects.Message;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class TopBanksOfCitiesParser {
+    private static final Logger LOGGER = Logger.getGlobal();
     private static final String url = "https://ru.myfin.by/currency/";
     private final String[] validCurrencyArr = new String[]{"usd", "eur", "gbp", "cny", "jpy"};
-
+    //private static final String sortingPatternUrl = "?sort=buy_course_36";
     private Message message;
 
     public TopBanksOfCitiesParser(Message message) {
@@ -45,8 +47,10 @@ public class TopBanksOfCitiesParser {
                 result += bankName + "\n" + "Покупка: " + buyingCurrency + "\n" + "Продажа: " + sellingCurrency + "\n\n";
             }
         }
-        if (result.equals(""))
+        if (result.equals("")){
+            LOGGER.warning("No sell/buy current currency in current city");
             return "В данном городе нет банков продающих/покупающих данную валюту";
+        }
         return header + "\n\n" + result + "\n\n";
     }
 
@@ -57,9 +61,10 @@ public class TopBanksOfCitiesParser {
         String currencyCode = parser.getCurrencyCodeFromMessage(message);
         String city = parser.getCityFromMessage(message);
 
-        if (city.equals("getCityError"))
+        if (city.equals("getCityError")) {
+            LOGGER.warning("No city error");
             return "Нет названия города";
-
+        }
         if (!currencyCode.equals("no valute")){
             xmlData = Jsoup.connect(url + currencyCode + "/" + city).get();
             return getBanksAndCurrency(xmlData);

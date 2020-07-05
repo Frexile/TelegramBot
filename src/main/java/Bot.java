@@ -7,12 +7,14 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class Bot extends TelegramLongPollingBot {
 
     private static final String botToken = "1074111622:AAGvryL9DZpIpOoi58eKMiBoSdVuUORGdg0";
+    private static final Logger LOGGER = Logger.getGlobal();
 
     public static void main(String[] args) {
         ApiContextInitializer.init();
@@ -20,7 +22,7 @@ public class Bot extends TelegramLongPollingBot {
         try {
             telegramBotsApi.registerBot(new Bot());
         } catch (TelegramApiRequestException e) {
-            e.printStackTrace();
+            LOGGER.warning("Bot has not been registered.");
         }
     }
 
@@ -36,7 +38,7 @@ public class Bot extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            LOGGER.warning("Sending message error.");
         }
     }
 
@@ -46,9 +48,14 @@ public class Bot extends TelegramLongPollingBot {
         MessageParser messageParser = new MessageParser();
         if (message != null && message.hasText()) {
             try {
+                MessageParser.loadResources();
+            } catch (FileNotFoundException e) {
+                LOGGER.warning("Losing data error.");
+            }
+            try {
                 sendMsg(message,messageParser.parseMessage(message));
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.warning("Bot does not understand the message");
             }
         }
     }

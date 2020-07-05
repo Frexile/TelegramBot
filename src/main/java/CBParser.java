@@ -25,12 +25,14 @@ public class CBParser {
 
     public String getCurrencyValue() throws IOException {
         String result = "";
+        boolean wrongData = true;
         Document xmlData = Jsoup.connect(url + getDate()).get();
 
         Elements currencies = xmlData.select("Valute");
         for (Element el: currencies) {
             String currencyCode = el.select("CharCode").text();
             if (Arrays.asList(validCurrencyArr).contains(currencyCode)) {
+                wrongData = false;
                 double nominal = Double.parseDouble(el.select("Nominal").text());
                 double value = Double.parseDouble(el.select("Value").text().replace(',','.'));
 
@@ -38,6 +40,6 @@ public class CBParser {
             }
         }
 
-        return "Курс по ЦБ за " + getDate() + ":\n" + result + "\nДля получения курса валют за определенную дату, введите ее в следующем формате: dd/mm/yyyy";
+        return !wrongData ? "Курс по ЦБ за " + getDate() + ":\n" + result : "Неверно указана дата";
     }
 }
