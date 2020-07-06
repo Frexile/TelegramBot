@@ -10,7 +10,6 @@ public class CBParser {
     private static final String url = "http://www.cbr.ru/scripts/XML_daily.asp?date_req=";
     private final String[] validCurrencyArr = new String[]{"USD", "EUR", "GBP", "CNY", "JPY"};
     private String date;
-
     public CBParser(String date) {
         this.date = date;
     }
