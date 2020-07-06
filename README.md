@@ -77,7 +77,7 @@ _Информация относительно курса валют по рег
   <dependency>
             <groupId>org.telegram</groupId>
                 <artifactId>telegrambots</artifactId>
-            <version>4.9</version>
+            <version>3.6</version>
   </dependency>
 ```
 
